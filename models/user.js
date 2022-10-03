@@ -11,6 +11,7 @@ const userSchema = mongoose.Schema({
     },
     userName: {
         type: String,
+        unique: true
     },
     photo: String,
     email: {
@@ -20,7 +21,7 @@ const userSchema = mongoose.Schema({
         lowercase: true,
         validator: [validator.isEmail, 'Submit a valid email']
     },
-    roles: {
+    role: {
         type: String,
         default: 'user',
         enum: ['user']
@@ -47,15 +48,6 @@ const userSchema = mongoose.Schema({
     passwordResetExpires: Date
 });
 
-//Mongoose pre-save hook for activation token generation 
-userSchema.pre('save', async function (next) {
-    if (this.isNew) {
-        const actToken = crypto.randomBytes(32).toString('hex');
-        this.activationToken = crypto.createHash('sha256').update(actToken).digest('hex')
-        this.activationTokenExpires = (Date.now() + 3 * 60 * 1000); //Set to 48 hours for production
-    }
-})
-
 //Mongoose pre-save hook for password hashing
 userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next()
@@ -69,6 +61,16 @@ userSchema.pre('save', async function (next) {
 
     this.passwordChangedAt = (Date.now() - 1000)
 })
+
+//Method to generate activation token
+userSchema.methods.actToken = function () {
+    const actToken = crypto.randomBytes(32).toString('hex');
+    console.log(actToken)
+    this.activationToken = crypto.createHash('sha256').update(actToken).digest('hex');
+    console.log(this.activationToken)
+    this.activationTokenExpires = (Date.now() + 10 * 60 * 1000); //Set to 48 hours for production
+    return actToken;
+};
 
 
 const User = mongoose.model('User', userSchema)

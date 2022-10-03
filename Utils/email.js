@@ -1,4 +1,8 @@
 import nodemailer from 'nodemailer';
+import * as dotenv from 'dotenv';
+dotenv.config({
+    path: './config.env'
+});
 
 const sendEmail = async function (options) {
 

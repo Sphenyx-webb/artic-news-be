@@ -1,6 +1,7 @@
 import express from 'express'
-import * as morgan from 'morgan'
+import morgan from 'morgan'
 import authRouter from './routes/auth.js'
+import dotenv from 'dotenv'
 
 const app = express();
 
