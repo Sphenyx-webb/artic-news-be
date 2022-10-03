@@ -17,6 +17,7 @@ import app from './app.js'
 
 const dbUri = process.env.DATABASE.replace('<password>', process.env.DATABASE_PASSWORD)
 
+//Connect to DB
 mongoose.connect(dbUri, {
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -24,9 +25,8 @@ mongoose.connect(dbUri, {
     console.log('Database connection successful...')
 })
 
-
+//Start server
 const port = process.env.PORT || 5000
-
 const server = app.listen(port, () => {
     console.log(`App is running on server port ${port}`)
 })
