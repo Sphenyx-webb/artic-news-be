@@ -65,12 +65,15 @@ userSchema.pre('save', async function (next) {
 //Method to generate activation token
 userSchema.methods.actToken = function () {
     const actToken = crypto.randomBytes(32).toString('hex');
-    console.log(actToken)
     this.activationToken = crypto.createHash('sha256').update(actToken).digest('hex');
-    console.log(this.activationToken)
     this.activationTokenExpires = (Date.now() + 10 * 60 * 1000); //Set to 48 hours for production
     return actToken;
 };
+
+//Method to check password correctness
+userSchema.methods.checkPass = async function (passCode, storedPass) {
+    return await bcrypt.compare(passCode, storedPass);
+}
 
 
 const User = mongoose.model('User', userSchema)
