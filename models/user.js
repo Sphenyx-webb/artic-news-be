@@ -75,6 +75,14 @@ userSchema.methods.checkPass = async function (passCode, storedPass) {
     return await bcrypt.compare(passCode, storedPass);
 }
 
+//Verify password has not been recently changed
+userSchema.methods.verifyPass = function (jwtTime) {
+    if (this.passwordChangedAt) {
+        const changedPassTime = parseInt(this.passwordChangedAt.getTime() / 1000, 10)
+        return jwtTime < changedPassTime
+    } else return false
+}
+
 
 const User = mongoose.model('User', userSchema)
 

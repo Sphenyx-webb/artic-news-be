@@ -91,11 +91,33 @@ const login = catchAsync(async (req, res, next) => {
 });
 
 const authorize = catchAsync(async (req, res, next) => {
-    // console.log(req.headers) -- To be worked on
+    let accessToken;
+    //Get Token else throw error
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        accessToken = req.headers.authorization.split(` `)[1]
+    } else {
+        return next(new customErr('User unauthenticated!!!', 401))
+    }
+    //Verify Token
+    const verified = await promisify(jwt.verify)(accessToken.process.env.JWT_SECRET)
+
+    //Get user
+    const user = await User.findById(verified.id)
+    if (!user) {
+        return next(new customErr('User no longer exists', 404))
+    }
+    //Check if user has changed password since previous login
+    if (user.currentPass(verified.iat)) {
+        return next(new customErr('Password has been recently changed, Kindly login', 401))
+    }
+    //Grant access
+    req.user = user;
+    next()
 })
 
 export {
     signUp,
     activateAcc,
-    login
+    login,
+    authorize
 }
