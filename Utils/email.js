@@ -27,14 +27,14 @@ const sendEmail = async function (options) {
 
     //Send email
     let emailInfo = await transporter.sendMail(mailOptions)
-    // if (emailInfo) console.log(emailInfo.messageId)
+    if (emailInfo) console.log(emailInfo.messageId)
 };
 
-const emailTemplate = async function (req, user, link) {
+const actAccEmail = async function (req, user, link) {
     const message = `Dear ${user.name}
-        You have successfully registered on artic-news-be. To activate your account please click the following link or copy and paste it into a browser.
-        ${link}
-        This link expires in 48hours and your registration will be deleted from the database.`
+            You have successfully registered on artic-news. To activate your account please click the following link or copy and paste it into a browser.
+            ${link}
+            This link expires in 48hours and your registration will be deleted from the database.`
     try {
         await sendEmail({
             to: user.email,
@@ -43,7 +43,33 @@ const emailTemplate = async function (req, user, link) {
         })
     } catch (err) {
         console.log(err)
+        user.activationToken = undefined;
+        user.activationTokenExpires = undefined;
+        await user.save() //Use validate only modified option and check why this alternative was created
     }
 }
 
-export default emailTemplate
+const resetAccEmail = async function (req, user, link) {
+    const message = `Dear ${user.name}
+        A request was made to reset your password, click the link below to reset your password
+        ${link}
+
+        if you did not make this request, kindly ignore this email`
+    try {
+        await sendEmail({
+            to: user.email,
+            subject: 'Reset Password',
+            text: message
+        })
+    } catch (err) {
+        console.log(err)
+        user.passwordResetToken = undefined;
+        user.passwordResetTokenExpires = undefined
+        await user.save()
+    }
+}
+
+export {
+    actAccEmail,
+    resetAccEmail
+}
